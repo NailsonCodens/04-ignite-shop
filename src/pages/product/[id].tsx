@@ -6,6 +6,7 @@ import Stripe from 'stripe'
 import Image from 'next/image'
 import axios from 'axios'
 import { useState } from 'react'
+import Head from 'next/head'
 
 
 interface ProductProps {
@@ -49,7 +50,12 @@ export default function Product({ product }: ProductProps) {
   }
 
   return (
-    <ProductContainer>
+    <>
+      <Head>
+        <title>Sua {product.name}</title>
+        <meta name="robots" content="noindex"/>
+      </Head>
+      <ProductContainer>
       <ImageContainer>
         <Image src={product.imageUrl} width={520} height={480} alt=""/>
       </ImageContainer>
@@ -60,6 +66,8 @@ export default function Product({ product }: ProductProps) {
         <button onClick={handleBuyProdcut} disabled={isCreatingCheckoutSession}>Comprar agora</button>
       </ProductDetails>
     </ProductContainer> 
+    
+    </>
   )
 }
 
