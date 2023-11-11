@@ -4,6 +4,8 @@ import { GetStaticPaths, GetStaticProps } from 'next'
 import { stripe } from '../../lib/stripe'
 import Stripe from 'stripe'
 import Image from 'next/image'
+import axios from 'axios'
+import { useState } from 'react'
 
 
 interface ProductProps {
@@ -18,6 +20,28 @@ interface ProductProps {
 }
 
 export default function Product({ product }: ProductProps) {
+  const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false)
+
+  async function handleBuyProdcut(){
+    try {
+      setIsCreatingCheckoutSession(true)
+
+      const response = await axios.post('/api/checkout', {
+        priceId: product.defaultPriceId
+      })
+
+      const { checkoutUrl} = response.data
+
+      //para rotas externas, para rotas internas usamos useRouter com push pra o endereço que queremos
+      window.location.href = checkoutUrl
+
+    } catch (error) {
+      //Conecar com alguma ferramenta de observabilidade
+      alert('Falha ao redirecionar ao checkout')
+    }
+  }
+
+
   const {isFallback} = useRouter()
 
   if(isFallback){
@@ -33,7 +57,7 @@ export default function Product({ product }: ProductProps) {
         <h1>{product.name}</h1>
         <span>{product.price}</span>
         <p>{product.description}</p>
-        <button>Comprar agora</button>
+        <button onClick={handleBuyProdcut} disabled={isCreatingCheckoutSession}>Comprar agora</button>
       </ProductDetails>
     </ProductContainer> 
   )
@@ -68,7 +92,7 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
           currency: 'BRL'
         }).format(price.unit_amount / 100),
         description: product.description,
-        defaultPriceId: price.id
+        defaultPriceId: price.id,
       }
     },
     revalidate: 60 * 60 * 1 // 1 hours
